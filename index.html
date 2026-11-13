@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
@@ -210,13 +210,14 @@
     }
 
     .nav-actions .phone{
-      font-size:0.78rem;
+      font-size:0.74rem;
       text-align:right;
     }
 
     .nav-actions .phone span{
       display:block;
       font-weight:600;
+      line-height:1.35;
     }
 
     .nav-toggle{
@@ -652,7 +653,8 @@
     }
 
     .form-group input,
-    .form-group textarea{
+    .form-group textarea,
+    .form-group select{
       width:100%;
       border-radius:12px;
       border:1px solid #dde1f0;
@@ -665,7 +667,8 @@
     }
 
     .form-group input:focus,
-    .form-group textarea:focus{
+    .form-group textarea:focus,
+    .form-group select:focus{
       border-color:var(--primary-red);
       box-shadow:0 0 0 2px rgba(209,0,0,.15);
       background:#fff;
@@ -694,6 +697,42 @@
       font-size:0.78rem;
       color:#777;
       margin-top:0.4rem;
+    }
+
+    /* Enhanced mason form */
+    .mason-card{
+      border:1px solid #e6e8f5;
+      background:linear-gradient(145deg,#fff,#f5f7ff);
+    }
+    .form-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:0.8rem;
+      margin-bottom:1rem;
+    }
+    .form-head .badge{
+      background:var(--deep-blue);
+      color:#fff;
+      padding:0.25rem 0.75rem;
+      border-radius:999px;
+      font-weight:700;
+      font-size:0.75rem;
+      letter-spacing:.04em;
+    }
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:0.9rem 1rem;
+    }
+    .span-2{
+      grid-column:span 2;
+    }
+    .form-actions{
+      margin-top:1rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.6rem;
     }
 
     /* ---------- Footer ---------- */
@@ -797,6 +836,12 @@
         opacity:1;
         pointer-events:auto;
       }
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+      .span-2{
+        grid-column:span 1;
+      }
 
       .nav-toggle{
         display:block;
@@ -889,11 +934,10 @@
 
       <div class="nav-actions">
         <div class="phone">
-          <span>হেড অফিস: 01617-723455</span>
-          <small>সার্ভিস সাপোর্ট: 01618-501670</small>
+          <span>কল করুন: 01617-723455</span>
         </div>
         <button class="btn btn-outline" onclick="window.location.href='tel:01617723455'">
-          <i class="fa-solid fa-phone-volume"></i> কল করুন
+          <i class="fa-solid fa-phone-volume"></i> এখনই কল করুন
         </button>
       </div>
 
@@ -928,7 +972,7 @@
 
         <div class="hero-actions">
           <button class="btn btn-primary" onclick="window.location.href='tel:01617723455'">
-            <i class="fa-solid fa-phone"></i> এখনই কল করুন (হেড অফিস)
+            <i class="fa-solid fa-phone"></i> এখনই কল করুন
           </button>
           <button class="btn btn-outline" onclick="window.location.href='#services'">
             <i class="fa-solid fa-list-ul"></i> আমাদের সেবাসমূহ
@@ -980,13 +1024,12 @@
           <div><i class="fa-solid fa-ruler-combined"></i> ইন্টেরিয়র ডিজাইন সল্যুশন</div>
         </div>
 
-        <div class="hero-card-footer">
+                                <div class="hero-card-footer">
           <div>
-            <strong>হেড অফিস:</strong> 01617-723455<br>
-            <strong>সার্ভিস অফিস:</strong> 01618-501670
+            <strong>ফোন:</strong> 01617-723455
           </div>
           <div>
-            <strong>ওয়েব:</strong><br>
+            <strong>ওয়েবসাইট:</strong><br>
             sadik.info.bd<br>sadik.net.bd
           </div>
         </div>
@@ -1098,10 +1141,9 @@
 
       <div class="why-card">
         <div class="why-card-icon"><i class="fa-solid fa-location-dot"></i></div>
-        <h3>দুই অফিস থেকে সার্ভিস</h3>
+        <h3>সব এলাকায় সার্ভিস</h3>
         <p>
-          হেড অফিস ও সার্ভিস অফিস – উভয় স্থান থেকেই সার্ভিস দেওয়া হয়,
-          যাতে দ্রুত সময়ে আপনার লোকেশনে পৌঁছানো সম্ভব হয়।
+          আপনি যেখানে থাকুন, দ্রুত সময়ের মধ্যে আপনার লোকেশনে পৌঁছে সেবা দেই।
         </p>
       </div>
     </div>
@@ -1112,105 +1154,97 @@
 <section id="contact">
   <div class="container">
     <div class="section-title">
-      <h2>ভর্তি আবেদন</h2>
-      <p>যোগাযোগ ফর্মের বদলে ভর্তি আবেদন ফর্ম যুক্ত করা হয়েছে। অনুগ্রহ করে প্রয়োজনীয় তথ্য পূরণ করুন।</p>
+      <h2>যোগাযোগ এবং পরিষেবা প্রদানকারী যোগ করুন</h2>
+      <p>একটি নতুন পরিষেবা প্রদানকারী যোগ করতে ফর্মটি পূরণ করুন৷ শুধুমাত্র ডেমো।</p>
     </div>
 
     <div class="contact-wrapper">
-      <!-- Info -->
       <div class="contact-card">
-        <h3>অফিস ঠিকানা ও হেল্পলাইন</h3>
-
-        <div class="office-grid">
+        <h3>যোগাযোগ</h3>
+        <div class="office-grid single">
           <div class="office-item">
-            <h4>হেড অফিস</h4>
+            <h4>কাস্টমার সাপোর্ট</h4>
             <p><i class="fa-solid fa-phone"></i> 01617-723455</p>
-            <p><i class="fa-solid fa-envelope"></i> info@sadik.info.bd (ঐচ্ছিক)</p>
-            <p><i class="fa-solid fa-location-dot"></i> ঠিকানা এখানে লিখতে পারবেন</p>
-          </div>
-
-          <div class="office-item">
-            <h4>সার্ভিস অফিস</h4>
-            <p><i class="fa-solid fa-phone"></i> 01618-501670</p>
-            <p><i class="fa-solid fa-envelope"></i> support@sadik.net.bd (ঐচ্ছিক)</p>
-            <p><i class="fa-solid fa-location-dot"></i> সার্ভিস অফিসের ঠিকানা এখানে যোগ করুন</p>
+            <p><i class="fa-solid fa-envelope"></i> support@sadik.info.bd</p>
+            <p><i class="fa-solid fa-location-dot"></i> আপনার প্রধান অফিসের ঠিকানা লিখুন</p>
           </div>
         </div>
-
         <div class="contact-phones">
-          <strong>যেকোন জরুরি কাজের জন্য সরাসরি কল করুন:</strong><br>
-          হেড অফিস: <a href="tel:01617723455">01617-723455</a><br>
-          সার্ভিস অফিস: <a href="tel:01618501670">01618-501670</a>
+          <strong>যেকোনো সেবার জন্য কল করুনঃ</strong><br>
+          <a href="tel:01617723455">01617-723455</a>
         </div>
-
         <div class="web-links">
           <a href="http://www.sadik.info.bd" target="_blank">www.sadik.info.bd</a>
           <a href="http://www.sadik.net.bd" target="_blank">www.sadik.net.bd</a>
         </div>
       </div>
 
-      <!-- Admission Form (front-end only) -->
-      <div class="contact-form-card">
-        <h3>ভর্তি আবেদন ফর্ম</h3>
-        <p>অভিভাবক বা শিক্ষার্থী যেই হোন, ভর্তি প্রক্রিয়ার জন্য প্রয়োজনীয় তথ্য ও ডকুমেন্ট আপলোড করুন।</p>
-
-        <form id="admissionForm" novalidate>
-          <div class="form-group">
-            <label for="applicantName">আবেদনকারীর নাম</label>
-            <input id="applicantName" type="text" placeholder="পুরো নাম লিখুন" required>
+      <!-- Service Provider Add Form -->
+      <div class="contact-form-card mason-card">
+        <div class="form-head">
+          <div>
+            <h3>পরিষেবা প্রদানকারী যোগ করুন</h3>
+            <p>নতুন পরিষেবা প্রদানকারীর বিবরণ জমা দিন।</p>
           </div>
+          <div class="badge">সেবা</div>
+        </div>
+        <form id="masonForm" novalidate>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="masonName">পরিষেবা প্রদানকারীর নাম*</label>
+              <input id="masonName" type="text" placeholder="পুরো নাম" required>
+            </div>
+            <div class="form-group">
+              <label for="mobileNumber">মোবাইল নম্বর*</label>
+              <input id="mobileNumber" type="tel" placeholder="01617-723455" required>
+            </div>
+            <div class="form-group">
+              <label for="fatherName">পিতার নাম</label>
+              <input id="fatherName" type="text" placeholder="পিতার নাম">
+            </div>
+            <div class="form-group">
+              <label for="motherName">মায়ের নাম</label>
+              <input id="motherName" type="text" placeholder="মায়ের নাম">
+            </div>
+            <div class="form-group">
+              <label for="nidNumber">NID নম্বর</label>
+              <input id="nidNumber" type="text" inputmode="numeric" placeholder="জাতীয় পরিচয়পত্র নম্বর">
+            </div>
+            <div class="form-group">
+              <label for="bloodGroup">রক্তের গ্রুপ</label>
+              <select id="bloodGroup">
+                <option value="" disabled selected>একটি নির্বাচন করুন</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div class="form-group span-2">
+              <label for="permanentAddress">স্থায়ী ঠিকানা</label>
+              <textarea id="permanentAddress" placeholder="বাড়ি/গ্রাম/থানা/জেলা"></textarea>
+            </div>
+            <div class="form-group span-2">
+              <label for="presentAddress">বর্তমান ঠিকানা</label>
+              <textarea id="presentAddress" placeholder="বর্তমান থাকার ঠিকানা"></textarea>
+            </div>
 
-          <div class="form-group">
-            <label for="phone">মোবাইল নাম্বার</label>
-            <input id="phone" type="tel" placeholder="১১ ডিজিট মোবাইল নাম্বার" required>
-          </div>
 
-          <div class="form-group">
-            <label for="email">ইমেইল (ঐচ্ছিক)</label>
-            <input id="email" type="email" placeholder="example@mail.com">
-          </div>
-
-          <div class="form-group">
-            <label>আবেদনকারীর ধরন</label>
-            <div class="radio-row">
-              <label><input type="radio" name="applicant_type" value="guardian" checked> অভিভাবক</label>
-              <label><input type="radio" name="applicant_type" value="student"> শিক্ষার্থী</label>
+            <div class="form-group span-2">
+              <label for="note">অতিরিক্ত তথ্য/দক্ষতা</label>
+              <textarea id="note" placeholder="কাজের ধরন, অভিজ্ঞতা, জরুরী যোগাযোগ"></textarea>
             </div>
           </div>
-
-          <div class="form-group">
-            <label for="studentName">শিক্ষার্থীর নাম</label>
-            <input id="studentName" type="text" placeholder="শিক্ষার্থীর নাম লিখুন" required>
-          </div>
-
-          <div class="form-group">
-            <label for="course">ক্লাস/কোর্স</label>
-            <input id="course" type="text" placeholder="যেমন: নবম শ্রেণি / ভর্তি কোচিং" required>
-          </div>
-
-          <div class="form-group">
-            <label for="nidUpload">এনআইডি কার্ড (অভিভাবক হলে বাধ্যতামূলক)</label>
-            <input id="nidUpload" type="file" accept=".jpg,.jpeg,.png,.pdf">
-          </div>
-
-          <div class="form-group">
-            <label for="birthUpload">জন্ম নিবন্ধনের কপি (শিক্ষার্থী বা এনআইডি না থাকলে বাধ্যতামূলক)</label>
-            <input id="birthUpload" type="file" accept=".jpg,.jpeg,.png,.pdf">
-          </div>
-
-          <div class="form-group">
-            <label for="note">অতিরিক্ত তথ্য</label>
-            <textarea id="note" placeholder="বিশেষ নির্দেশনা বা প্রশ্ন লিখুন"></textarea>
-          </div>
-
-          <div id="admissionStatus" class="small-note" aria-live="polite"></div>
-
-          <button class="btn btn-primary" type="submit">
-            <i class="fa-solid fa-paper-plane"></i> ভর্তি আবেদন পাঠান
-          </button>
-
-          <div class="small-note">
-            বাধ্যতামূলক: আবেদনকারীর নাম, মোবাইল, শিক্ষার্থীর নাম, ক্লাস/কোর্স এবং আবেদনের ধরন। অভিভাবক হলে এনআইডি কার্ড সংযুক্ত করুন; না থাকলে জন্ম নিবন্ধনের কপি দিন। শিক্ষার্থী হিসেবে আবেদন করলে জন্ম নিবন্ধনের কপি সংযুক্ত করা আবশ্যক।
+          <div id="masonStatus" class="small-note" aria-live="polite"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <i class="fa-solid fa-paper-plane"></i> পরিষেবা প্রদানকারী যোগ করুন
+            </button>
+            <div class="small-note">সাহায্যের জন্য কল করুন: 01617-723455</div>
           </div>
         </form>
       </div>
@@ -1244,62 +1278,39 @@
   // Year
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Admission form validation & file requirements
-  const admissionForm = document.getElementById('admissionForm');
-  if (admissionForm) {
-    const applicantTypeInputs = admissionForm.querySelectorAll('input[name=\"applicant_type\"]');
-    const nidUpload = document.getElementById('nidUpload');
-    const birthUpload = document.getElementById('birthUpload');
-    const statusEl = document.getElementById('admissionStatus');
+    // Mason form validation
+  const masonForm = document.getElementById("masonForm");
+  if (masonForm) {
+    const statusEl = document.getElementById("masonStatus");
+    const sonsInput = document.getElementById("sons");
+    const daughtersInput = document.getElementById("daughters");
 
-    const syncRequirements = () => {
-      const type = admissionForm.querySelector('input[name=\"applicant_type\"]:checked').value;
-      if (type === 'guardian') {
-        nidUpload.required = true;
-        birthUpload.required = false;
-      } else {
-        nidUpload.required = false;
-        birthUpload.required = true;
-      }
-    };
-
-    applicantTypeInputs.forEach(input => input.addEventListener('change', syncRequirements));
-    syncRequirements();
-
-    admissionForm.addEventListener('submit', (event) => {
+    masonForm.addEventListener("submit", (event) => {
       event.preventDefault();
 
-      const type = admissionForm.querySelector('input[name=\"applicant_type\"]:checked').value;
-      const hasNid = nidUpload.files.length > 0;
-      const hasBirth = birthUpload.files.length > 0;
-      const messages = [];
-
-      if (!admissionForm.checkValidity()) {
-        admissionForm.reportValidity();
-        messages.push('বাধ্যতামূলক ঘরগুলো পূরণ করুন।');
-      }
-
-      if (type === 'guardian' && !hasNid && !hasBirth) {
-        messages.push('অভিভাবক হলে এনআইডি কার্ড না থাকলে জন্ম নিবন্ধনের কপি দিন।');
-      }
-
-      if (type === 'student' && !hasBirth) {
-        messages.push('শিক্ষার্থীর জন্ম নিবন্ধনের কপি বাধ্যতামূলক।');
-      }
-
-      if (messages.length) {
-        statusEl.textContent = messages.join(' ');
-        statusEl.style.color = '#d10000';
+      if (!masonForm.checkValidity()) {
+        masonForm.reportValidity();
+        statusEl.textContent = "সঠিকভাবে সব ক্ষেত্র পূরণ করুন.";
+        statusEl.style.color = "#d10000";
         return;
       }
 
-      statusEl.style.color = '#1c2455';
-      statusEl.textContent = 'আপনার ভর্তি আবেদন নথিভুক্ত হয়েছে। আমরা দ্রুত যোগাযোগ করব।';
-      admissionForm.reset();
-      syncRequirements();
+      const sons = Number(sonsInput.value || 0);
+      const daughters = Number(daughtersInput.value || 0);
+
+      if (sons < 0 || daughters < 0) {
+        statusEl.textContent = "পুত্র বা কন্যার সংখ্যা নেতিবাচক হতে পারে না।";
+        statusEl.style.color = "#d10000";
+        return;
+      }
+
+      statusEl.style.color = "#1c2455";
+      statusEl.textContent = "সার্ভিস প্রদানকারীর তথ্য রেকর্ড করা হয়েছে (ডেমো)।";
+      masonForm.reset();
     });
   }
 </script>
 
 </body>
 </html>
+

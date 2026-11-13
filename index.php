@@ -1,0 +1,1509 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/db.php';
+
+$emptyForm = [
+  'masonName' => '',
+  'mobileNumber' => '',
+  'fatherName' => '',
+  'motherName' => '',
+  'nidNumber' => '',
+  'maritalStatus' => '',
+  'gender' => '',
+  'spouseName' => '',
+  'spouseNid' => '',
+  'wifeName' => '',
+  'wifeNid' => '',
+  'bloodGroup' => 'B+',
+  'permanentAddress' => '',
+  'presentAddress' => '',
+  'sons' => '',
+  'daughters' => '',
+  'note' => '',
+];
+
+$formData = $emptyForm;
+$status = ['type' => null, 'message' => ''];
+
+function e(?string $value): string
+{
+    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $formData = [
+        'masonName' => trim($_POST['masonName'] ?? ''),
+        'mobileNumber' => trim($_POST['mobileNumber'] ?? ''),
+        'fatherName' => trim($_POST['fatherName'] ?? ''),
+        'motherName' => trim($_POST['motherName'] ?? ''),
+        'nidNumber' => trim($_POST['nidNumber'] ?? ''),
+        'maritalStatus' => trim($_POST['maritalStatus'] ?? ''),
+        'gender' => trim($_POST['gender'] ?? ''),
+        'spouseName' => trim($_POST['spouseName'] ?? ''),
+        'spouseNid' => trim($_POST['spouseNid'] ?? ''),
+        'wifeName' => trim($_POST['wifeName'] ?? ''),
+        'wifeNid' => trim($_POST['wifeNid'] ?? ''),
+        'bloodGroup' => trim($_POST['bloodGroup'] ?? ''),
+        'permanentAddress' => trim($_POST['permanentAddress'] ?? ''),
+        'presentAddress' => trim($_POST['presentAddress'] ?? ''),
+        'sons' => trim($_POST['sons'] ?? ''),
+        'daughters' => trim($_POST['daughters'] ?? ''),
+        'note' => trim($_POST['note'] ?? ''),
+    ];
+
+    $sons = is_numeric($formData['sons']) ? max(0, (int)$formData['sons']) : 0;
+    $daughters = is_numeric($formData['daughters']) ? max(0, (int)$formData['daughters']) : 0;
+    $maritalStatus = in_array($formData['maritalStatus'], ['single', 'married'], true) ? $formData['maritalStatus'] : '';
+    $formData['maritalStatus'] = $maritalStatus;
+    $gender = in_array($formData['gender'], ['male', 'female'], true) ? $formData['gender'] : '';
+    $formData['gender'] = $gender;
+
+    $errors = [];
+    if ($formData['masonName'] === '' || $formData['mobileNumber'] === '') {
+        $errors[] = 'Name and mobile number are required.';
+    }
+    if ($formData['mobileNumber'] !== '' && !preg_match('/^[0-9+\-\s]{6,20}$/', $formData['mobileNumber'])) {
+        $errors[] = 'Please provide a valid mobile number.';
+    }
+    if ($gender === '') {
+        $errors[] = 'Gender is required.';
+    }
+    if ($maritalStatus === 'married') {
+        if ($formData['spouseName'] === '') {
+            $errors[] = 'Spouse name is required for married status.';
+        }
+        if ($formData['spouseNid'] === '') {
+            $errors[] = 'Spouse NID is required for married status.';
+        }
+    }
+    if (!empty($errors)) {
+        $status = ['type' => 'error', 'message' => implode(' ', $errors)];
+    } else {
+        try {
+            $pdo = get_db();
+            $stmt = $pdo->prepare(
+                'INSERT INTO mason_applications
+                    (mason_name, mobile_number, father_name, mother_name, nid_number, gender, marital_status, spouse_name, spouse_nid, blood_group, permanent_address, present_address, sons, daughters, note)
+                 VALUES
+                    (:mason_name, :mobile_number, :father_name, :mother_name, :nid_number, :gender, :marital_status, :spouse_name, :spouse_nid, :blood_group, :permanent_address, :present_address, :sons, :daughters, :note)'
+            );
+
+            $stmt->execute([
+                ':mason_name' => $formData['masonName'],
+                ':mobile_number' => $formData['mobileNumber'],
+                ':father_name' => $formData['fatherName'],
+                ':mother_name' => $formData['motherName'],
+                ':nid_number' => $formData['nidNumber'],
+                ':gender' => $formData['gender'],
+                ':marital_status' => $formData['maritalStatus'],
+                ':spouse_name' => $formData['spouseName'],
+                ':spouse_nid' => $formData['spouseNid'],
+                ':blood_group' => $formData['bloodGroup'],
+                ':permanent_address' => $formData['permanentAddress'],
+                ':present_address' => $formData['presentAddress'],
+                ':sons' => $sons,
+                ':daughters' => $daughters,
+                ':note' => $formData['note'],
+            ]);
+
+            $status = ['type' => 'success', 'message' => 'Data saved successfully.'];
+            $formData = $emptyForm;
+        } catch (Throwable $e) {
+            $status = ['type' => 'error', 'message' => 'Database connection failed. Please ensure MySQL is running and configured properly.'];
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>সাদিক এন্টারপ্রাইজ | Sadik Enterprise</title>
+
+  <!-- Google Font for Bangla -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <style>
+    :root{
+      --primary-red:#d10000;
+      --deep-blue:#1c2455;
+      --accent-orange:#ffb347;
+      --accent-pink:#ff6f8b;
+      --bg-gradient:linear-gradient(135deg,#ffe29f,#ffb347,#ff6f91,#ff7eb3);
+      --text-dark:#222;
+      --text-light:#fff;
+      --card-bg:#ffffffd9;
+      --shadow-soft:0 15px 40px rgba(0,0,0,0.15);
+      --radius-xl:24px;
+      --transition-fast:0.25s ease;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:"Noto Sans Bengali", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:#f5f5f8;
+      color:var(--text-dark);
+      line-height:1.6;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    img{
+      max-width:100%;
+      display:block;
+    }
+
+    /* ---------- Layout utilities ---------- */
+    .container{
+      width:100%;
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 1.4rem;
+    }
+
+    section{
+      padding:4rem 0;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0.8rem 1.5rem;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      letter-spacing:.02em;
+      transition:var(--transition-fast);
+      font-size:0.95rem;
+      gap:.5rem;
+      text-wrap:nowrap;
+    }
+
+    .btn-primary{
+      background:var(--primary-red);
+      color:var(--text-light);
+      box-shadow:0 10px 25px rgba(0,0,0,.25);
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-2px);
+      box-shadow:0 15px 35px rgba(0,0,0,.35);
+      filter:brightness(1.03);
+    }
+
+    .btn-outline{
+      border:1px solid rgba(255,255,255,.8);
+      color:var(--text-light);
+      background:transparent;
+    }
+
+    .btn-outline:hover{
+      background:rgba(255,255,255,.15);
+      transform:translateY(-2px);
+    }
+
+    .section-title{
+      text-align:center;
+      margin-bottom:2.5rem;
+    }
+
+    .section-title h2{
+      font-size:2rem;
+      color:var(--deep-blue);
+      margin-bottom:.3rem;
+      letter-spacing:.02em;
+    }
+
+    .section-title p{
+      font-size:0.98rem;
+      color:#555;
+    }
+
+    /* ---------- Header & Hero ---------- */
+    header{
+      background:var(--bg-gradient);
+      color:var(--text-light);
+      position:relative;
+      overflow:hidden;
+    }
+
+    header::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:radial-gradient(circle at top left, rgba(255,255,255,.35), transparent 55%);
+      opacity:0.55;
+      pointer-events:none;
+    }
+
+    .nav-bar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(12px);
+      background:linear-gradient(to bottom, rgba(0,0,0,.25), transparent);
+    }
+
+    .nav-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0.9rem 1.4rem;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+    }
+
+    .brand-badge{
+      background:var(--deep-blue);
+      color:var(--text-light);
+      border-radius:999px;
+      padding:0.1rem 0.55rem;
+      font-size:0.7rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .brand-title-bn{
+      font-size:1.3rem;
+      font-weight:800;
+      text-shadow:0 2px 3px rgba(0,0,0,.4);
+    }
+
+    .brand-tag{
+      font-size:0.72rem;
+      opacity:.95;
+    }
+
+    nav ul{
+      display:flex;
+      list-style:none;
+      gap:1.2rem;
+      font-size:0.9rem;
+      font-weight:500;
+    }
+
+    nav li a{
+      position:relative;
+    }
+
+    nav li a::after{
+      content:"";
+      position:absolute;
+      left:0;
+      bottom:-0.2rem;
+      width:0;
+      height:2px;
+      background:#fff;
+      transition:var(--transition-fast);
+    }
+
+    nav li a:hover::after{
+      width:100%;
+    }
+
+    .nav-actions{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+    }
+
+    .nav-actions .phone{
+      font-size:0.74rem;
+      text-align:right;
+    }
+
+    .nav-actions .phone span{
+      display:block;
+      font-weight:600;
+      line-height:1.35;
+    }
+
+    .nav-toggle{
+      display:none;
+      font-size:1.3rem;
+      cursor:pointer;
+    }
+
+    /* Hero */
+    .hero{
+      padding:1.5rem 0 3.5rem; /* reduced top padding to remove blank space */
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.4fr 1.1fr;
+      gap:2.5rem;
+      align-items:center;
+    }
+
+    .hero-pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.5rem;
+      margin-bottom:1.2rem;
+      font-size:0.76rem;
+    }
+
+    .hero-pill{
+      padding:0.2rem 0.7rem;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.8);
+      background:rgba(0,0,0,.2);
+      backdrop-filter:blur(10px);
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+    }
+
+    .hero-pill i{
+      font-size:0.7rem;
+    }
+
+    .hero-title{
+      font-size:2.6rem;
+      line-height:1.2;
+      margin-bottom:.4rem;
+      text-shadow:0 3px 5px rgba(0,0,0,.45);
+    }
+
+    .hero-subtitle{
+      font-size:1.1rem;
+      margin-bottom:1.2rem;
+      font-weight:500;
+      text-shadow:0 2px 4px rgba(0,0,0,.4);
+    }
+
+    .hero-desc{
+      font-size:0.97rem;
+      max-width:32rem;
+      opacity:.92;
+      margin-bottom:1.5rem;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.8rem;
+      align-items:center;
+      margin-bottom:1.6rem;
+    }
+
+    .hero-actions small{
+      font-size:0.8rem;
+      opacity:0.9;
+    }
+
+    .hero-info-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:1.7rem;
+      font-size:0.8rem;
+      opacity:.97;
+    }
+
+    .hero-info-item span{
+      display:block;
+      font-weight:700;
+      font-size:0.85rem;
+    }
+
+    /* Hero right card */
+    .hero-card{
+      background:var(--card-bg);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow-soft);
+      padding:1.6rem 1.4rem 1.4rem;
+      position:relative;
+      overflow:hidden;
+      color:var(--deep-blue);
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      width:220px;
+      height:220px;
+      background:radial-gradient(circle, rgba(255,111,145,.2), transparent 60%);
+      right:-60px;
+      top:-60px;
+    }
+
+    .hero-card-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:1rem;
+    }
+
+    .hero-card-title{
+      font-weight:700;
+      color:var(--deep-blue);
+      font-size:1.05rem;
+    }
+
+    .hero-card-badge{
+      background:var(--primary-red);
+      color:#fff;
+      padding:0.25rem 0.8rem;
+      border-radius:999px;
+      font-size:0.75rem;
+      white-space:nowrap;
+      box-shadow:0 8px 20px rgba(0,0,0,.25);
+    }
+
+    .hero-card-sub{
+      font-size:0.83rem;
+      color:#555;
+      margin-bottom:0.8rem;
+    }
+
+    .chip-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.45rem;
+      margin-bottom:1.1rem;
+    }
+
+    .chip{
+      font-size:0.75rem;
+      background:#f7f0ff;
+      border-radius:999px;
+      padding:0.18rem 0.7rem;
+      border:1px solid #eedcff;
+      white-space:nowrap;
+      color:var(--deep-blue);
+    }
+
+    .service-mini-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:0.55rem 0.7rem;
+      margin-bottom:1.1rem;
+      font-size:0.8rem;
+      color:#333;
+    }
+    .service-mini-grid i{
+      margin-right:0.3rem;
+      color:var(--primary-red);
+    }
+
+    .hero-card-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:0.8rem;
+      border-top:1px dashed #e3e3e3;
+      padding-top:0.7rem;
+      margin-top:0.5rem;
+    }
+
+    .hero-card-footer strong{
+      color:var(--deep-blue);
+    }
+    .hero-card-footer a{
+      color:var(--deep-blue);
+      font-weight:700;
+    }
+
+    /* ---------- Services ---------- */
+    .services-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:1.5rem;
+    }
+
+    .service-card{
+      background:#fff;
+      border-radius:20px;
+      box-shadow:0 12px 30px rgba(0,0,0,.08);
+      padding:1.5rem 1.4rem;
+      transition:var(--transition-fast);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .service-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at top right, rgba(255,111,145,.14), transparent 55%);
+      opacity:0;
+      transition:var(--transition-fast);
+    }
+
+    .service-card:hover{
+      transform:translateY(-6px) scale(1.01);
+      box-shadow:0 18px 40px rgba(0,0,0,.16);
+    }
+
+    .service-card:hover::before{
+      opacity:1;
+    }
+
+    .service-icon{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:0.8rem;
+      font-size:1.15rem;
+      background:var(--bg-gradient);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(0,0,0,.22);
+    }
+
+    .service-card h3{
+      font-size:1.02rem;
+      margin-bottom:0.35rem;
+      color:var(--deep-blue);
+    }
+
+    .service-card p{
+      font-size:0.88rem;
+      color:#555;
+    }
+
+    /* ---------- CTA strip ---------- */
+    .cta-strip{
+      background:var(--primary-red);
+      color:#fff;
+      padding:1rem 0;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 15px 40px rgba(0,0,0,.22);
+    }
+
+    .cta-strip span{
+      font-weight:700;
+      font-size:1rem;
+      letter-spacing:.06em;
+    }
+
+    .cta-strip small{
+      display:block;
+      font-size:0.82rem;
+      margin-top:.2rem;
+      opacity:.95;
+    }
+
+    .cta-strip::before,
+    .cta-strip::after{
+      content:"";
+      position:absolute;
+      top:-60px;
+      width:160px;
+      height:160px;
+      border-radius:50%;
+      border:2px dashed rgba(255,255,255,.35);
+      opacity:.5;
+    }
+
+    .cta-strip::before{
+      left:-40px;
+    }
+    .cta-strip::after{
+      right:-50px;
+      top:auto;
+      bottom:-70px;
+    }
+
+    /* ---------- Why Us ---------- */
+    .why-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:1.4rem;
+    }
+
+    .why-card{
+      background:#fff;
+      border-radius:18px;
+      padding:1.4rem 1.2rem;
+      box-shadow:0 10px 26px rgba(0,0,0,.08);
+      border-top:4px solid transparent;
+      transition:var(--transition-fast);
+    }
+
+    .why-card:nth-child(1){ border-top-color:#ffb347; }
+    .why-card:nth-child(2){ border-top-color:#ff6f91; }
+    .why-card:nth-child(3){ border-top-color:#ff7eb3; }
+
+    .why-card h3{
+      font-size:1.02rem;
+      margin-bottom:0.5rem;
+      color:var(--deep-blue);
+    }
+
+    .why-card p{
+      font-size:0.9rem;
+      color:#555;
+    }
+
+    .why-card-icon{
+      font-size:1.4rem;
+      margin-bottom:0.35rem;
+      color:var(--primary-red);
+    }
+
+    /* ---------- Contact ---------- */
+    .contact-wrapper{
+      display:grid;
+      grid-template-columns:1.2fr 1fr;
+      gap:2rem;
+      align-items:flex-start;
+    }
+
+    .contact-card{
+      background:#fff;
+      border-radius:20px;
+      box-shadow:0 12px 30px rgba(0,0,0,.08);
+      padding:1.6rem 1.4rem;
+    }
+
+    .contact-card h3{
+      font-size:1.15rem;
+      margin-bottom:0.8rem;
+      color:var(--deep-blue);
+    }
+
+    .office-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:1.2rem;
+      font-size:0.9rem;
+    }
+
+    .office-item h4{
+      font-size:0.95rem;
+      margin-bottom:0.35rem;
+      color:var(--primary-red);
+    }
+
+    .office-item p{
+      font-size:0.86rem;
+      color:#555;
+    }
+
+    .office-item p i{
+      margin-right:0.4rem;
+      color:var(--primary-red);
+    }
+
+    .contact-phones{
+      margin-top:1rem;
+      padding-top:0.8rem;
+      border-top:1px dashed #e3e3e3;
+      font-size:0.87rem;
+    }
+
+    .contact-phones strong{
+      color:var(--deep-blue);
+    }
+
+    .web-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.6rem;
+      margin-top:0.7rem;
+      font-size:0.85rem;
+    }
+
+    .web-links a{
+      padding:0.3rem 0.65rem;
+      border-radius:999px;
+      background:#f4f6ff;
+      border:1px solid #e0e4ff;
+      color:var(--deep-blue);
+      font-weight:500;
+    }
+
+    /* Form */
+    .contact-form-card{
+      background:#fff;
+      border-radius:22px;
+      padding:1.8rem 1.5rem;
+      box-shadow:0 12px 30px rgba(0,0,0,.08);
+      border:1px solid #e6eaf5;
+    }
+    .form-head{
+      align-items:center;
+    }
+    .form-head .badge{
+      background:var(--deep-blue);
+      color:#fff;
+      padding:0.35rem 0.85rem;
+      border-radius:999px;
+      font-weight:700;
+      letter-spacing:.04em;
+    }
+
+    .contact-form-card h3{
+      font-size:1.12rem;
+      margin-bottom:0.4rem;
+      color:var(--deep-blue);
+    }
+
+    .contact-form-card p{
+      font-size:0.9rem;
+      color:#48506a;
+      margin-bottom:0.9rem;
+    }
+
+    .form-group{
+      margin-bottom:0.8rem;
+    }
+
+    .form-group label{
+      display:block;
+      font-size:0.8rem;
+      margin-bottom:0.2rem;
+      color:#444;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select{
+      width:100%;
+      border-radius:12px;
+      border:1px solid #dce2f0;
+      padding:0.75rem 0.9rem;
+      font-family:inherit;
+      font-size:0.85rem;
+      outline:none;
+      transition:var(--transition-fast);
+      background:#f7f9fd;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder{
+      color:#98a2b3;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus{
+      border-color:var(--primary-red);
+      box-shadow:0 0 0 2px rgba(209,0,0,.15);
+      background:#fff;
+    }
+
+    .form-group textarea{
+      resize:vertical;
+      min-height:100px;
+      line-height:1.5;
+    }
+
+    .radio-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.8rem;
+      font-size:0.86rem;
+    }
+
+    .radio-row label{
+      display:flex;
+      align-items:center;
+      gap:0.3rem;
+      cursor:pointer;
+    }
+
+    .small-note{
+      font-size:0.78rem;
+      color:#777;
+      margin-top:0.4rem;
+    }
+
+    /* Enhanced mason form */
+    .mason-card{
+      border:1px solid #e6e8f5;
+      background:linear-gradient(145deg,#fff,#f5f7ff);
+    }
+    .form-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:0.8rem;
+      margin-bottom:1rem;
+    }
+    .form-head .badge{
+      background:var(--deep-blue);
+      color:#fff;
+      padding:0.25rem 0.75rem;
+      border-radius:999px;
+      font-weight:700;
+      font-size:0.75rem;
+      letter-spacing:.04em;
+    }
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:0.9rem 1rem;
+    }
+    .span-2{
+      grid-column:span 2;
+    }
+    .form-actions{
+      margin-top:1rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.6rem;
+    }
+
+    .status-message{
+      margin-bottom:0.8rem;
+      padding:0.75rem 0.9rem;
+      border-radius:12px;
+      font-size:0.9rem;
+      border:1px solid #e0e5f5;
+    }
+    .status-success{
+      background:#e9f7ef;
+      color:#1e5b36;
+      border-color:#b9e2c4;
+    }
+    .status-error{
+      background:#fdecea;
+      color:#8a1f2b;
+      border-color:#f5c2c7;
+    }
+    .spouse-field{
+      display:none;
+    }
+
+    /* ---------- Footer ---------- */
+    footer{
+      background:var(--deep-blue);
+      color:#d3d8ff;
+      padding:1.5rem 0 1.8rem;
+      font-size:0.8rem;
+    }
+
+    .footer-inner{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:center;
+      gap:1rem;
+    }
+
+    .footer-inner span{
+      opacity:.9;
+    }
+
+    .footer-inner a{
+      color:#fff;
+      font-weight:500;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width:960px){
+      .hero-grid{
+        grid-template-columns:1.1fr;
+      }
+      .hero{
+        padding-top:2.3rem;
+      }
+      .contact-wrapper{
+        grid-template-columns:1fr;
+      }
+      .services-grid,
+      .why-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .nav-actions{
+        display:none;
+      }
+    }
+
+    @media (max-width:760px){
+      .nav-inner{
+        padding-inline:1rem;
+      }
+
+      .container{
+        padding-inline:1rem;
+      }
+
+      .hero{
+        padding-top:1.8rem;
+      }
+
+      .hero-grid{
+        grid-template-columns:1fr;
+        text-align:center;
+      }
+
+      .hero-actions{
+        justify-content:center;
+      }
+
+      .hero-info-row{
+        justify-content:center;
+      }
+
+      nav ul{
+        position:absolute;
+        top:56px;
+        left:0;
+        right:0;
+        background:rgba(0,0,0,.78);
+        backdrop-filter:blur(12px);
+        flex-direction:column;
+        gap:0;
+        padding:0.5rem 1rem 0.8rem;
+        transform-origin:top;
+        transform:scaleY(0);
+        opacity:0;
+        pointer-events:none;
+        transition:var(--transition-fast);
+      }
+
+      nav ul li{
+        padding:0.4rem 0;
+      }
+
+      nav ul li a{
+        display:block;
+      }
+
+      nav ul.show{
+        transform:scaleY(1);
+        opacity:1;
+        pointer-events:auto;
+      }
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+      .span-2{
+        grid-column:span 1;
+      }
+
+      .nav-toggle{
+        display:block;
+      }
+
+      .brand-title-bn{
+        font-size:1.15rem;
+      }
+
+      .hero-title{
+        font-size:2.05rem;
+      }
+
+      .hero-subtitle{
+        font-size:1rem;
+      }
+
+      .hero-card{
+        margin-top:0.5rem;
+        padding:1.4rem 1.1rem;
+        backdrop-filter:blur(6px);
+      }
+
+      .services-grid,
+      .why-grid{
+        grid-template-columns:1fr;
+      }
+
+      .office-grid{
+        grid-template-columns:1fr;
+      }
+
+      section{
+        padding:3rem 0;
+      }
+
+      .cta-strip span{
+        font-size:0.95rem;
+      }
+    }
+
+    @media (max-width:480px){
+      .hero-actions{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .hero-info-row{
+        flex-direction:column;
+        gap:0.8rem;
+      }
+
+      .chip-row{
+        justify-content:center;
+      }
+
+      .service-mini-grid{
+        grid-template-columns:1fr;
+      }
+
+      .hero-card{
+        padding:1.2rem 1rem;
+        border-radius:18px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+<header id="top">
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div>
+          <div class="brand-badge">সততা • দক্ষতা • একতা</div>
+          <div class="brand-title-bn">সাদিক এন্টারপ্রাইজ</div>
+          <div class="brand-tag">যন্ত্রের সাথে সেবা</div>
+        </div>
+      </div>
+
+      <nav>
+        <ul id="navMenu">
+          <li><a href="#services">সেবাসমূহ</a></li>
+          <li><a href="#why">কেন আমরা</a></li>
+          <li><a href="#contact">যোগাযোগ</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="phone">
+          <span>কল করুন: 01617-723455</span>
+        </div>
+        <button class="btn btn-outline" onclick="window.location.href='tel:01617723455'">
+          <i class="fa-solid fa-phone-volume"></i> এখনই কল করুন
+        </button>
+      </div>
+
+      <div class="nav-toggle" id="navToggle">
+        <i class="fa-solid fa-bars"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="container hero-grid">
+      <!-- Left -->
+      <div>
+        <div class="hero-pill-row">
+          <div class="hero-pill">
+            <i class="fa-solid fa-star"></i> দক্ষ টেকনিশিয়ান টিম
+          </div>
+          <div class="hero-pill">
+            <i class="fa-solid fa-clock"></i> দ্রুত ও নির্ভরযোগ্য সার্ভিস
+          </div>
+        </div>
+
+        <h1 class="hero-title">সাদিক এন্টারপ্রাইজ</h1>
+        <div class="hero-subtitle">বিদ্যুৎ, গ্যাস, পানি, এসি, ফ্রিজ থেকে শুরু করে<br>ইন্টেরিয়র ডিজাইন পর্যন্ত এক ঠিকানায় সেবা।</div>
+
+        <p class="hero-desc">
+          অভিজ্ঞ ইলেকট্রিক, স্যানিটারি, ওয়েল্ডিং, রাজমিস্ত্রি, রং মিস্ত্রি থেকে শুরু করে
+          ফার্নিচার ও ইন্টেরিয়র ডিজাইনের সম্পূর্ণ সল্যুশন – সবকিছুই এখন সাদিক এন্টারপ্রাইজে।
+          আপনার বাড়ি বা অফিসের যেকোন কাজের জন্য এক কলেই পূর্ণাঙ্গ সেবা।
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="window.location.href='tel:01617723455'">
+            <i class="fa-solid fa-phone"></i> এখনই কল করুন
+          </button>
+          <button class="btn btn-outline" onclick="window.location.href='#services'">
+            <i class="fa-solid fa-list-ul"></i> আমাদের সেবাসমূহ
+          </button>
+        </div>
+
+        <div class="hero-info-row">
+          <div class="hero-info-item">
+            <span><i class="fa-solid fa-screwdriver-wrench"></i> এখানে সকল মিস্ত্রি পাওয়া যায়</span>
+            দক্ষ ও প্রশিক্ষণপ্রাপ্ত টেকনিশিয়ান।
+          </div>
+          <div class="hero-info-item">
+            <span><i class="fa-solid fa-shield"></i> নিরাপদ ও ঝামেলামুক্ত কাজ</span>
+            মানসম্মত উপকরণ ও নিশ্চিন্ত সেবা।
+          </div>
+        </div>
+      </div>
+
+      <!-- Right hero card -->
+      <aside class="hero-card">
+        <div class="hero-card-header">
+          <div>
+            <div class="hero-card-title">কমপ্লিট হোম & অফিস সার্ভিস</div>
+            <div class="hero-card-sub">এক কলেই সব ধরনের টেকনিক্যাল সল্যুশন</div>
+          </div>
+          <div class="hero-card-badge">
+            <i class="fa-solid fa-bolt-lightning"></i> জরুরি সেবা
+          </div>
+        </div>
+
+        <div class="chip-row">
+          <div class="chip">বিদ্যুৎ ও ইলেকট্রিক কাজ</div>
+          <div class="chip">গ্যাস ও পানি লাইন</div>
+          <div class="chip">এসি & ফ্রিজ সার্ভিস</div>
+          <div class="chip">স্যানিটারি ফিটিং</div>
+          <div class="chip">ওয়েল্ডিং & রাজমিস্ত্রি</div>
+          <div class="chip">ফার্নিচার & বার্ণিশ</div>
+          <div class="chip">ইন্টেরিয়র ডিজাইন</div>
+        </div>
+
+        <div class="service-mini-grid">
+          <div><i class="fa-solid fa-bolt"></i> বিদ্যুৎ / ইলেকট্রিক কাজ</div>
+          <div><i class="fa-solid fa-fire-flame-simple"></i> গ্যাস লাইন / চুলা সেটাপ</div>
+          <div><i class="fa-solid fa-faucet"></i> পানি লাইন & স্যানিটারি</div>
+          <div><i class="fa-solid fa-snowflake"></i> এসি, ফ্রিজ ইনস্টলেশন ও সার্ভিস</div>
+          <div><i class="fa-solid fa-wrench"></i> ওয়েল্ডিং & রাজ কাজে দক্ষ টিম</div>
+          <div><i class="fa-solid fa-brush"></i> রং, টাইলস, পাল্লা, চৌকাঠ, লক</div>
+          <div><i class="fa-solid fa-couch"></i> সকল ফার্নিচার ও বার্ণিশ</div>
+          <div><i class="fa-solid fa-ruler-combined"></i> ইন্টেরিয়র ডিজাইন সল্যুশন</div>
+        </div>
+
+                                <div class="hero-card-footer">
+          <div>
+            <strong>ফোন:</strong> 01617-723455
+          </div>
+          <div>
+            <strong>ওয়েবসাইট:</strong><br>
+            sadik.info.bd<br>sadik.net.bd
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</header>
+
+<!-- CTA strip -->
+<div class="cta-strip">
+  <div class="container">
+    <span>* এখানে সকল মিস্ত্রি পাওয়া যায় *</span>
+    <small>বিদ্যুৎ, গ্যাস, পানি, এসি, ফ্রিজ, স্যানিটারি, ফার্নিচার, ইন্টেরিয়র – একসাথে সব সেবা।</small>
+  </div>
+</div>
+
+<!-- Services -->
+<section id="services">
+  <div class="container">
+    <div class="section-title">
+      <h2>আমাদের সেবাসমূহ</h2>
+      <p>আপনার বাসা, দোকান বা অফিসের জন্য প্রয়োজনীয় সব ধরনের টেকনিক্যাল ও ইন্টেরিয়র সার্ভিস আমরা দিয়ে থাকি।</p>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon"><i class="fa-solid fa-plug"></i></div>
+        <h3>বিদ্যুৎ & ইলেকট্রিক সেবা</h3>
+        <p>
+          নতুন লাইন টানা, রি-ওয়্যারিং, সেফটি সার্কিট, মেইন সুইচ বোর্ড, ফ্যান, লাইট,
+          সিলিং লাইট, স্মার্ট সুইচসহ সব ধরনের বিদ্যুৎ কাজ দক্ষভাবে করা হয়।
+        </p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon"><i class="fa-solid fa-burn"></i></div>
+        <h3>গ্যাস & পানি লাইন</h3>
+        <p>
+          গ্যাস লাইন ইনস্টলেশন, রক্ষণাবেক্ষণ, লিকেজ চেক, চুলা ইনস্টলেশন, পানি লাইন ও
+          মোটর সেটাপ – সব কাজ নিরাপদভাবে ও নিয়ম মেনে সম্পন্ন করা হয়।
+        </p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon"><i class="fa-solid fa-snowflake"></i></div>
+        <h3>এসি & ফ্রিজ সার্ভিস</h3>
+        <p>
+          এসি ও ফ্রিজ ইনস্টলেশন, সার্ভিসিং, গ্যাস চার্জ, মেরামতসহ যেকোন সমস্যার দ্রুত সমাধান।
+          অভিজ্ঞ টেকনিশিয়ান দলের মাধ্যমে নিখুঁত সেবা।
+        </p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon"><i class="fa-solid fa-toilet"></i></div>
+        <h3>স্যানিটারি & ওয়েল্ডিং</h3>
+        <p>
+          টয়লেট ফিটিং, কমোড, বেসিন, শাওয়ার, মিক্সার, লাইনের লিকেজ – সব ধরনের স্যানিটারি কাজ।
+          এছাড়া গেট, গ্রিল, শেড ইত্যাদির ওয়েল্ডিং সেবা পাওয়া যায়।
+        </p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon"><i class="fa-solid fa-paint-roller"></i></div>
+        <h3>রং, রাজ & টাইলস কাজ</h3>
+        <p>
+          রাজমিস্ত্রি, ফ্লোর-ওয়াল টাইলস, মার্বেল ফিটিং, প্লাস্টার ও পেইন্টিং – সব কাজ সুন্দর ডিজাইন ও
+          ফিনিশিংসহ করা হয়, যা আপনার ঘরে এনে দিবে নতুন রূপ।
+        </p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon"><i class="fa-solid fa-chalkboard"></i></div>
+        <h3>ফার্নিচার & ইন্টেরিয়র ডিজাইন</h3>
+        <p>
+          পাল্লা, চৌকাঠ, দরজা-জানালা, কেবিনেট, শোকেস, টেবিল, চেয়ার, বার্ণিশসহ সব ফার্নিচার কাজ।
+          সাথে সম্পূর্ণ ইন্টেরিয়র ডিজাইন কনসেপ্ট থেকে এক্সিকিউশন পর্যন্ত। 
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Us -->
+<section id="why">
+  <div class="container">
+    <div class="section-title">
+      <h2>কেন সাদিক এন্টারপ্রাইজ?</h2>
+      <p>আমাদের মূল ভিত্তি – সততা, দক্ষতা ও একতা। তাই গুণগত মানের সাথে কোন আপস নেই।</p>
+    </div>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-card-icon"><i class="fa-solid fa-handshake-angle"></i></div>
+        <h3>সততার সাথে সেবা</h3>
+        <p>
+          কার্ডে উল্লেখিত “সততা, দক্ষতা, একতা” – এই মূলনীতির উপর ভিত্তি করে
+          নির্ভরযোগ্য কোটেশন, মানসম্মত উপকরণ ও সরল আচরণের নিশ্চয়তা দিই।
+        </p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-icon"><i class="fa-solid fa-users-gear"></i></div>
+        <h3>দক্ষ ও অভিজ্ঞ টিম</h3>
+        <p>
+          প্রতিটি সেকশনে আলাদা বিশেষজ্ঞ মিস্ত্রি ও ইঞ্জিনিয়ার টিম রয়েছে;
+          ফলে বিদ্যুৎ থেকে ইন্টেরিয়র – প্রতিটি কাজই হয় প্রফেশনাল মানে।
+        </p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-icon"><i class="fa-solid fa-location-dot"></i></div>
+        <h3>সব এলাকায় সার্ভিস</h3>
+        <p>
+          আপনি যেখানে থাকুন, দ্রুত সময়ের মধ্যে আপনার লোকেশনে পৌঁছে সেবা দেই।
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="container">
+    <div class="section-title">
+      <h2>যোগাযোগ এবং পরিষেবা প্রদানকারী যোগ করুন</h2>
+      <p>একটি নতুন পরিষেবা প্রদানকারী যোগ করতে ফর্মটি পূরণ করুন৷ শুধুমাত্র ডেমো।</p>
+    </div>
+
+    <div class="contact-wrapper">
+      <div class="contact-card">
+        <h3>যোগাযোগ</h3>
+        <div class="office-grid single">
+          <div class="office-item">
+            <h4>কাস্টমার সাপোর্ট</h4>
+            <p><i class="fa-solid fa-phone"></i> 01617-723455</p>
+            <p><i class="fa-solid fa-envelope"></i> support@sadik.info.bd</p>
+            <p><i class="fa-solid fa-location-dot"></i> আপনার প্রধান অফিসের ঠিকানা লিখুন</p>
+          </div>
+        </div>
+        <div class="contact-phones">
+          <strong>যেকোনো সেবার জন্য কল করুনঃ</strong><br>
+          <a href="tel:01617723455">01617-723455</a>
+        </div>
+        <div class="web-links">
+          <a href="http://www.sadik.info.bd" target="_blank">www.sadik.info.bd</a>
+          <a href="http://www.sadik.net.bd" target="_blank">www.sadik.net.bd</a>
+        </div>
+      </div>
+
+      <!-- Service Provider Add Form -->
+      <div class="contact-form-card mason-card">
+        <div class="form-head">
+          <div>
+            <h3>পরিষেবা প্রদানকারী যোগ করুন</h3>
+            <p>নতুন পরিষেবা প্রদানকারীর বিবরণ জমা দিন।</p>
+          </div>
+          <div class="badge"></div>
+        </div>
+        <form id="masonForm" method="post" action="#contact">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="masonName">পরিষেবা প্রদানকারীর নাম*</label>
+              <input id="masonName" name="masonName" type="text" placeholder="পুরো নাম" required value="<?php echo e($formData['masonName']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="mobileNumber">মোবাইল নম্বর*</label>
+              <input id="mobileNumber" name="mobileNumber" type="tel" placeholder="01617-723455" required value="<?php echo e($formData['mobileNumber']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="fatherName">পিতার নাম</label>
+              <input id="fatherName" name="fatherName" type="text" placeholder="পিতার নাম" value="<?php echo e($formData['fatherName']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="motherName">মায়ের নাম</label>
+              <input id="motherName" name="motherName" type="text" placeholder="মায়ের নাম" value="<?php echo e($formData['motherName']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="nidNumber">NID নম্বর</label>
+              <input id="nidNumber" name="nidNumber" type="text" inputmode="numeric" placeholder="জাতীয় পরিচয়পত্র নম্বর" value="<?php echo e($formData['nidNumber']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="gender">লিঙ্গ</label>
+              <select id="gender" name="gender" required>
+                <option value="" disabled <?php echo $formData['gender'] === '' ? 'selected' : ''; ?>>লিঙ্গ নির্বাচন করুন</option>
+                <option value="male" <?php echo $formData['gender'] === 'male' ? 'selected' : ''; ?>>পুরুষ</option>
+                <option value="female" <?php echo $formData['gender'] === 'female' ? 'selected' : ''; ?>>মহিলা</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="maritalStatus">বৈবাহিক অবস্থা</label>
+              <select id="maritalStatus" name="maritalStatus" required>
+                <option value="" disabled <?php echo $formData['maritalStatus'] === '' ? 'selected' : ''; ?>>অবস্থা নির্বাচন করুন</option>
+                <option value="single" <?php echo $formData['maritalStatus'] === 'single' ? 'selected' : ''; ?>>Single</option>
+                <option value="married" <?php echo $formData['maritalStatus'] === 'married' ? 'selected' : ''; ?>>Married</option>
+              </select>
+            </div>
+            <div class="form-group spouse-field">
+              <label for="spouseName" id="spouseNameLabel">স্ত্রীর নাম</label>
+              <input id="spouseName" name="spouseName" type="text" placeholder="স্ত্রীর নাম" value="<?php echo e($formData['spouseName']); ?>">
+            </div>
+            <div class="form-group spouse-field">
+              <label for="spouseNid" id="spouseNidLabel">স্ত্রীর NID</label>
+              <input id="spouseNid" name="spouseNid" type="text" placeholder="NID" value="<?php echo e($formData['spouseNid']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="bloodGroup">রক্তের গ্রুপ</label>
+              <select id="bloodGroup" name="bloodGroup">
+                <option value="" disabled <?php echo $formData['bloodGroup'] === "" ? "selected" : ""; ?>>রক্তের গ্রুপ</option>
+                <option value="A+" <?php echo $formData['bloodGroup'] === "A+" ? "selected" : ""; ?>>A+</option>
+                <option value="A-" <?php echo $formData['bloodGroup'] === "A-" ? "selected" : ""; ?>>A-</option>
+                <option value="B+" <?php echo $formData['bloodGroup'] === "B+" ? "selected" : ""; ?>>B+</option>
+                <option value="B-" <?php echo $formData['bloodGroup'] === "B-" ? "selected" : ""; ?>>B-</option>
+                <option value="O+" <?php echo $formData['bloodGroup'] === "O+" ? "selected" : ""; ?>>O+</option>
+                <option value="O-" <?php echo $formData['bloodGroup'] === "O-" ? "selected" : ""; ?>>O-</option>
+                <option value="AB+" <?php echo $formData['bloodGroup'] === "AB+" ? "selected" : ""; ?>>AB+</option>
+                <option value="AB-" <?php echo $formData['bloodGroup'] === "AB-" ? "selected" : ""; ?>>AB-</option>
+              </select>
+            </div>
+            <div class="form-group span-2">
+              <label for="permanentAddress">স্থায়ী ঠিকানা</label>
+              <textarea id="permanentAddress" name="permanentAddress" placeholder="বাড়ি/গ্রাম/থানা/জেলা"><?php echo e($formData['permanentAddress']); ?></textarea>
+            </div>
+            <div class="form-group span-2">
+              <label for="presentAddress">বর্তমান ঠিকানা</label>
+              <textarea id="presentAddress" name="presentAddress" placeholder="বর্তমান থাকার ঠিকানা"><?php echo e($formData['presentAddress']); ?></textarea>
+            </div>
+            <div class="form-group">
+              <label for="sons">পুত্রের সংখ্যা</label>
+              <input id="sons" name="sons" type="number" min="0" placeholder="0" value="<?php echo e($formData['sons']); ?>">
+            </div>
+            <div class="form-group">
+              <label for="daughters">কন্যার সংখ্যা</label>
+              <input id="daughters" name="daughters" type="number" min="0" placeholder="0" value="<?php echo e($formData['daughters']); ?>">
+            </div>
+            <div class="form-group span-2">
+              <label for="note">অতিরিক্ত তথ্য/দক্ষতা</label>
+              <textarea id="note" name="note" placeholder="কাজের ধরন, অভিজ্ঞতা, জরুরী যোগাযোগ"><?php echo e($formData['note']); ?></textarea>
+            </div>
+          </div>
+          <?php if (!empty($status['message'])): ?>
+          <div class="status-message <?php echo $status['type'] === 'success' ? 'status-success' : 'status-error'; ?>">
+            <?php echo e($status['message']); ?>
+          </div>
+        <?php endif; ?>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <i class="fa-solid fa-paper-plane"></i> পরিষেবা প্রদানকারী যোগ করুন
+            </button>
+            <div class="small-note">সাহায্যের জন্য কল করুন: 01617-723455</div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-inner">
+    <span>© <span id="year"></span> সাদিক এন্টারপ্রাইজ • যন্ত্রের সাথে সেবা</span>
+    <span>ডিজাইন & ডেভেলপমেন্ট: আপনার কোম্পানি/নাম</span>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav toggle
+  const navToggle = document.getElementById('navToggle');
+  const navMenu   = document.getElementById('navMenu');
+
+  navToggle.addEventListener('click', () => {
+    navMenu.classList.toggle('show');
+  });
+
+  // Close nav when clicking a link (mobile)
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navMenu.classList.remove('show');
+    });
+  });
+
+  // Year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Marital status toggle for spouse fields
+  const maritalSelect = document.getElementById('maritalStatus');
+  const genderSelect = document.getElementById('gender');
+  const spouseFieldBlocks = document.querySelectorAll('.spouse-field');
+  const spouseNameLabel = document.getElementById('spouseNameLabel');
+  const spouseNidLabel = document.getElementById('spouseNidLabel');
+  const spouseNameInput = document.getElementById('spouseName');
+  const spouseNidInput = document.getElementById('spouseNid');
+
+  const updateSpouseLabels = () => {
+    const isFemale = genderSelect && genderSelect.value === 'female';
+    if (spouseNameLabel) spouseNameLabel.textContent = isFemale ? 'স্বামীর নাম' : 'স্ত্রীর নাম';
+    if (spouseNidLabel) spouseNidLabel.textContent = isFemale ? 'স্বামীর NID' : 'স্ত্রীর NID';
+    if (spouseNameInput) spouseNameInput.placeholder = isFemale ? 'স্বামীর নাম' : 'স্ত্রীর নাম';
+    if (spouseNidInput) spouseNidInput.placeholder = isFemale ? 'স্বামীর NID' : 'স্ত্রীর NID';
+  };
+
+  const syncSpouseFields = () => {
+    const married = maritalSelect && maritalSelect.value === 'married';
+    spouseFieldBlocks.forEach(block => {
+      block.style.display = married ? 'block' : 'none';
+      block.querySelectorAll('input').forEach(inp => {
+        inp.required = married;
+      });
+    });
+  };
+
+  if (maritalSelect) {
+    updateSpouseLabels();
+    syncSpouseFields();
+    maritalSelect.addEventListener('change', syncSpouseFields);
+  }
+  if (genderSelect) {
+    genderSelect.addEventListener('change', updateSpouseLabels);
+  }
+
+</script>
+
+</body>
+</html>
+
