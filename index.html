@@ -1295,8 +1295,8 @@
         return;
       }
 
-      const sons = Number(sonsInput.value || 0);
-      const daughters = Number(daughtersInput.value || 0);
+      const sons = Number(sonsInput?.value || 0);
+      const daughters = Number(daughtersInput?.value || 0);
 
       if (sons < 0 || daughters < 0) {
         statusEl.textContent = "পুত্র বা কন্যার সংখ্যা নেতিবাচক হতে পারে না।";
